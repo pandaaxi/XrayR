@@ -149,20 +149,20 @@ jobs:
           done
 
       - name: Rename build_assets folder
-        run: mv build_assets XrayR-$ASSET_NAME
+        run: mv build_assets XrayR-${{ env.ASSET_NAME }}
 
-      - name: Upload files to Artifacts (SHA-pinned workaround)
-        uses: actions/upload-artifact@5e856f5b2e6460e08a2d1d3a9e5b7c6552c8c3ff
+      - name: Upload files to Artifacts (mirror)
+        uses: actions-ecosystem/upload-artifact@v1
         with:
-          name: XrayR-${{ steps.get_filename.outputs.ASSET_NAME }}
+          name: XrayR-${{ env.ASSET_NAME }}
           path: |
-            ./XrayR-${{ steps.get_filename.outputs.ASSET_NAME }}/*
+            ./XrayR-${{ env.ASSET_NAME }}/*
 
       - name: Upload binaries to GitHub Release
         uses: svenstaro/upload-release-action@v2
         if: github.event_name == 'release'
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./XrayR-${{ steps.get_filename.outputs.ASSET_NAME }}.zip*
+          file: ./XrayR-${{ env.ASSET_NAME }}.zip*
           tag: ${{ github.ref }}
           file_glob: true
