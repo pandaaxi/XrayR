@@ -61,6 +61,50 @@ func InboundBuilder(config *Config, nodeInfo *api.NodeInfo, tag string) (*core.I
 		if (nodeInfo.NodeType == "V2ray" && nodeInfo.EnableVless) || nodeInfo.NodeType == "Vless" {
 			protocol = "vless"
 			// Enable fallback
+			if nodeInfo.Network == "xhttp" {
+				streamSetting = &conf.StreamConfig{
+					Network:  "xhttp",
+					Security: "tls",
+					XhttpSettings: &conf.XhttpConfig{
+						Path: nodeInfo.Path,
+						Mode: nodeInfo.Mode,
+					},
+				}
+	
+				if nodeInfo.Extra != nil {
+					extra := nodeInfo.Extra
+	
+					if headers, ok := extra["headers"].(map[string]interface{}); ok {
+						streamSetting.XhttpSettings.Headers = headers
+					}
+					if pad, ok := extra["xPaddingBytes"].(string); ok {
+						streamSetting.XhttpSettings.XPaddingBytes = pad
+					}
+					if val, ok := extra["noGRPCHeader"].(bool); ok {
+						streamSetting.XhttpSettings.NoGRPCHeader = val
+					}
+					if val, ok := extra["noSSEHeader"].(bool); ok {
+						streamSetting.XhttpSettings.NoSSEHeader = val
+					}
+					if val, ok := extra["scMaxEachPostBytes"].(float64); ok {
+						streamSetting.XhttpSettings.SCMaxEachPostBytes = int(val)
+					}
+					if val, ok := extra["scMinPostsIntervalMs"].(float64); ok {
+						streamSetting.XhttpSettings.SCMinPostsIntervalMs = int(val)
+					}
+					if val, ok := extra["scMaxBufferedPosts"].(float64); ok {
+						streamSetting.XhttpSettings.SCMaxBufferedPosts = int(val)
+					}
+	
+					if xmuxRaw, ok := extra["xmux"].(map[string]interface{}); ok {
+						streamSetting.XhttpSettings.Xmux = xmuxRaw
+					}
+	
+					if dlSettings, ok := extra["downloadSettings"].(map[string]interface{}); ok {
+						streamSetting.XhttpSettings.DownloadSettings = dlSettings
+					}
+				}
+			}	
 			if config.EnableFallback {
 				fallbackConfigs, err := buildVlessFallbacks(config.FallBackConfigs)
 				if err == nil {
